@@ -1,2 +1,2 @@
 # Elias_2016a
-Replication code for "Asset Pricing with Expectation Shocks".
+Replication code for Elias (2016), "Asset Pricing with Expectation Shocks", Journal of Economic Dynamics and Control.
