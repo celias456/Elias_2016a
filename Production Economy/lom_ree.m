@@ -1,0 +1,77 @@
+function [lom,pf1_totaltimes,pf2_totaltimes,pf1_engaged,pf2_engaged,R1test,R2test] = lom_ree(a1,a2,b1,ro,gamma,Ptm2,Ztm2,shock,T,eshock,eshock_wn) 
+% Returns Law of motion for all variables under a REE
+% Returns a Tx7 matrix lom containing the law of motion under a REE for
+% variables
+%    lom(:,1) = Equity price
+%    lom(:,2) = Output
+%    lom(:,3) = Consumption
+%    lom(:,4) = Dividends
+%    lom(:,5) = Bond Price
+%    lom(:,6) = Capital
+%    lom(:,7) = Productivity shock
+%    lom(:,8) = Investment
+%    lom(:,9) = Gross profits
+
+
+%Initialize storage 
+lom = zeros(T+2,9); %Stores law of motion of all variables
+lom(1,1) = Ptm2; %Store initial equity price
+expshocks = zeros(T+2,2); %Stores law of motion of expectation shocks
+
+%These are the REE parameter solutions
+A = (-1 + sqrt(1-4*a1*a2))/(-2*a1);
+B = b1/(1-a1*A-a1*ro);
+
+
+%Set initial values
+Ztm1 = Ztm2*ro + shock(2); %Generate initial value of shock
+lom(2,7) = Ztm1; %Store initial value of shock
+expshocks(2,1) = eshock(1,1)*(eshock_wn(1,1)*eshock(1,4) + eshock_wn(2,1)); %Store initial value of expectation shock for agent 1
+expshocks(2,2) = eshock(2,1)*(eshock_wn(1,2)*eshock(2,4) + eshock_wn(2,2)); %Store initial value of expectation shock for agent 2
+EP_0 =  (A^2)*Ptm2 + (B*(A+ro))*Ztm1 + expshocks(2,1); %expectations 
+lom(2,1) = a1*EP_0 + a2*Ptm2 + b1*Ztm1; %Store initial value of price
+
+
+for t = 3:(T+2)
+    
+   tm1 = t-1;
+   Z_tm1 = lom(tm1,7); %Productivity shock in previous period
+   Z_t = Z_tm1*ro + shock(t); %Current value of productivity shock
+   expshocks(t,1) = eshock(1,1)*(expshocks(tm1,1)*eshock(1,4) + eshock_wn(t,1)); %Current value of expectation shock for agent 1
+   expshocks(t,2) = eshock(2,1)*(expshocks(tm1,2)*eshock(2,4) + eshock_wn(t,2)); %Current value of expectation shock for agent 2
+   
+   P_tm1 = lom(tm1,1);
+   %Obtain law of motion for variables under ree
+   EP_tp1 = (A^2)*P_tm1 + (B*(A+ro))*Z_t + expshocks(t,1); %Expectations
+   P_t = a1*EP_tp1 + a2*P_tm1 + b1*Z_t; 
+   
+   %Obtain law of motion for other endogeneous variables in the model
+   lom(t,1) = P_t; %Price
+   lom(t,2) = gamma(1,1)*P_t + gamma(1,2)*P_tm1 + gamma(1,3)*Z_t + gamma(1,4)*EP_tp1; %Output
+   lom(t,3) = gamma(2,1)*P_t + gamma(2,2)*P_tm1 + gamma(2,3)*Z_t + gamma(2,4)*EP_tp1; %Consumption
+   lom(t,4) = gamma(3,1)*P_t + gamma(3,2)*P_tm1 + gamma(3,3)*Z_t + gamma(3,4)*EP_tp1; %Dividends
+   lom(t,5) = gamma(4,1)*P_t + gamma(4,2)*P_tm1 + gamma(4,3)*Z_t + gamma(4,4)*EP_tp1; %Bond Price
+   lom(t,6) = gamma(5,1)*P_t + gamma(5,2)*P_tm1 + gamma(5,3)*Z_t + gamma(5,4)*EP_tp1; %Capital
+   lom(t,7) = Z_t; %Shock
+   lom(t,8) = gamma(6,1)*P_t + gamma(6,2)*P_tm1 + gamma(6,3)*Z_t + gamma(6,4)*EP_tp1; %Investment
+   lom(t,9) = gamma(7,1)*P_t + gamma(7,2)*P_tm1 + gamma(7,3)*Z_t + gamma(7,4)*EP_tp1; %Gross Profit
+   
+   %Obtain law of motion for agent forecasts
+   lom(t,10) = 0; %Previous period price
+   lom(t,11) = 0; %Agent 1 previous period prediction of price
+   lom(t,12) = 0; %Agent 2 previous period prediction of price
+   
+   
+    
+end
+
+lom = lom(3:T+2,:);
+
+pf1_totaltimes = 0;
+pf2_totaltimes = 0;
+pf1_engaged = 0;
+pf2_engaged = 0;
+R1test = 0;
+R2test = 0;
+
+end
