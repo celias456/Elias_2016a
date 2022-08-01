@@ -1,0 +1,43 @@
+function [B] = msm_numderiv(seedstate,estimates,tol,sT,EM,expectationshock,constant_2,gain)
+%Calculates Numrical derivatives of the simulated moments
+%Numerical derivatives are calculated using a two-point estimation method
+
+%Returns a 4x4 matrix 'B' where the row represents the moment and the column
+%represents the parameter
+
+mu = estimates(1);
+eshock_std = estimates(2);
+eshock_ro = estimates(3);
+
+mu_tol = tol*mu;
+eshock_std_tol = tol*eshock_std;
+eshock_ro_tol = tol*eshock_ro;
+
+
+%Calculate 'B'
+
+B = zeros(4,4);
+
+%Calculate numerical derivatives for mu
+mu_ub_all = msm_g_st(seedstate,gain,[mu+mu_tol,eshock_std,eshock_ro,gain],sT,EM,expectationshock,constant_2);
+mu_lb_all = msm_g_st(seedstate,gain,[mu-mu_tol,eshock_std,eshock_ro,gain],sT,EM,expectationshock,constant_2);
+for count = 1:4
+    B(count,1) = (mu_ub_all(count)-mu_lb_all(count))/(2*mu_tol);
+end
+
+%Calculate numerical derivatives for eshock_std
+eshock_std_ub_all = msm_g_st(seedstate,[mu,eshock_std+eshock_std_tol,eshock_ro,gain],sT,EM,expectationshock,constant_2);
+eshock_std_lb_all = msm_g_st(seedstate,[mu,eshock_std-eshock_std_tol,eshock_ro,gain],sT,EM,expectationshock,constant_2);
+for count = 1:4
+    B(count,2) = (eshock_std_ub_all(count)-eshock_std_lb_all(count))/(2*eshock_std_tol);
+end
+
+%Calculate numerical derivatives for eshock_ro
+eshock_ro_ub_all = msm_g_st(seedstate,[mu,eshock_std,eshock_ro+eshock_ro_tol,gain],sT,EM,expectationshock,constant_2);
+eshock_ro_lb_all = msm_g_st(seedstate,[mu,eshock_std,eshock_ro-eshock_ro_tol,gain],sT,EM,expectationshock,constant_2);
+for count = 1:4
+    B(count,3) = (eshock_ro_ub_all(count)-eshock_ro_lb_all(count))/(2*eshock_ro_tol);
+end
+
+
+end

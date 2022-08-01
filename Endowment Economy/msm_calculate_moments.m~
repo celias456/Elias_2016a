@@ -1,0 +1,34 @@
+function [r_mean,pd_mean,pd_var] = msm_calculate_moments(allvariables_levels)
+%Calculates moments for msm estimation
+
+
+
+%% Equity return
+%Get equity returns
+[r] = get_returns(allvariables_levels(:,1),allvariables_levels(:,4),allvariables_levels(:,5));
+
+%Calculate mean equity return
+r_mean = mean(r);
+
+
+%% Price Dividend Ratio
+%Calculate Price-Dividend ratio
+dimensions_allvariables_levels = size(allvariables_levels);
+n = dimensions_allvariables_levels(1);
+pd = zeros(n,1);
+
+for i = 4:n
+    pd(i) = allvariables_levels(i,1)/(allvariables_levels(i,4)+allvariables_levels(i-1,4)+allvariables_levels(i-2,4)+allvariables_levels(i-3,4));
+
+end
+
+%Calculate moments
+pd = pd(4:end); 
+pd_mean = mean(pd);
+pd_var = var(pd);
+
+
+
+
+
+end
